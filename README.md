@@ -2,7 +2,7 @@
   <source media="(prefers-reduced-motion: reduce) and (prefers-color-scheme: dark)" srcset="assets/hero-dark-static.svg">
   <source media="(prefers-reduced-motion: reduce)" srcset="assets/hero-light-static.svg">
   <source media="(prefers-color-scheme: dark)" srcset="assets/hero-dark.svg">
-  <img src="assets/hero-light.svg" alt="Abhishek R P — building products and exploring AI. Robotics and AI student at DSCE, Bengaluru; founder of Bento in Mysuru." width="100%">
+  <img src="assets/hero-light.svg" alt="Abhishek R P — Artificial Intelligence and Robotics student at DSCE, Bengaluru; founder of Bento in Mysuru." width="100%">
 </picture>
 
 <p align="center">
@@ -11,7 +11,7 @@
   <a href="https://www.usapp.in/"><img src="https://img.shields.io/badge/US-Visit_the_app-B95783?style=for-the-badge&labelColor=131C2E" alt="Visit the US website"></a>
 </p>
 
-I'm a **Robotics & AI undergraduate at Dayananda Sagar College of Engineering**. My work spans mobile apps, backend systems, and experiments in multimodal reasoning. Currently building **Bento** and running **VisDSR**.
+I'm an **Artificial Intelligence and Robotics student at Dayananda Sagar College of Engineering**. I build mobile apps and backend systems, and study how models reason from text and images. Currently building **Bento** and running **VisDSR**.
 
 ## On my desk
 

@@ -114,11 +114,15 @@ def hero(theme, animated=True):
         )
         + text(41, 123, "Abhishek R P", 57, p["foreground"], 700, letter_spacing="-2")
         + text(43, 166, "I build products and explore AI.", 23, p["secondary"], 400)
-        + text(43, 218, "ROBOTICS & AI", 11, p["blue"], 600, letter_spacing="1.6")
         + text(
-            189, 218, "PRODUCT ENGINEERING", 11, p["amber"], 600, letter_spacing="1.6"
+            43,
+            218,
+            "ARTIFICIAL INTELLIGENCE AND ROBOTICS STUDENT",
+            11,
+            p["blue"],
+            600,
+            letter_spacing="1",
         )
-        + text(407, 218, "ALGORITHMS", 11, p["rose"], 600, letter_spacing="1.6")
         + f'<path d="M43 253H548" stroke="{p["line"]}"/>'
         + text(43, 283, "DSCE · Bengaluru", 13, p["secondary"])
         + text(339, 283, "Founder, Bento · Mysuru", 13, p["secondary"])
@@ -128,7 +132,7 @@ def hero(theme, animated=True):
         900,
         320,
         "Abhishek R P — products, AI and algorithms",
-        "Robotics and AI undergraduate at DSCE, Bengaluru, and founder of Bento in Mysuru. "
+        "Artificial Intelligence and Robotics student at DSCE, Bengaluru, and founder of Bento in Mysuru. "
         "The illustration shows disjoint-set path compression from D through C and B to A.",
         body,
     )

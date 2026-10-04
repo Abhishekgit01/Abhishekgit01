@@ -125,7 +125,7 @@ def render_activity(data, theme, updated):
         y = 52 + (index % 7) * 13
         body += (
             f'<rect x="{x}" y="{y}" width="19" height="9" rx="2" '
-            f'fill="{palette["blue"]}" opacity="{0.13 + 0.87 * intensity:.2f}"/>'
+            f'fill="{palette["accent"]}" opacity="{0.13 + 0.87 * intensity:.2f}"/>'
         )
     body += text(660, 154, "Recent contribution activity", 10, palette["secondary"])
     body += text(
@@ -168,7 +168,7 @@ def render_calendar(data, theme):
             body += (
                 f'<rect x="{25 + column * column_step:.2f}" y="{45 + row * 13}" '
                 f'width="{column_step - 4:.2f}" height="9" rx="2" '
-                f'fill="{palette["blue"]}" opacity="{0.13 + 0.87 * intensity:.2f}"/>'
+                f'fill="{palette["accent"]}" opacity="{0.13 + 0.87 * intensity:.2f}"/>'
             )
     return document(
         900,

@@ -1,0 +1,33 @@
+username: Abhishekgit01
+profile:
+  name: "Abhishek R P"
+  tagline: "Artificial Intelligence and Robotics student"
+  philosophy: "Founder of Bento. Building US and VisDSR."
+galaxy_arms:
+  - name: "AI experiments"
+    items: [Python]
+    repos: [VisDSR, Federated-learning]
+  - name: "Apps"
+    items: [TypeScript, JavaScript]
+    repos: [CPulse-Tracker, Ybyte]
+  - name: "Algorithms"
+    items: [C++, C]
+projects:
+  - repo: "Abhishekgit01/VisDSR"
+    arm: 0
+    description: "DSU reasoning from text and images. Main study in progress."
+  - repo: "Abhishekgit01/CPulse-Tracker"
+    arm: 1
+    description: "Codeforces, CodeChef and LeetCode profiles in one dashboard."
+  - repo: "Abhishekgit01/Ybyte"
+    arm: 1
+    description: "Campus food ordering with live order updates and QR pickup."
+theme:
+  dark: monochrome
+  light: monochrome
+motion: true
+stats:
+  metrics: [repos, prs]
+languages:
+  exclude: []
+  max_display: 6

@@ -1,0 +1,49 @@
+name: Refresh profile artwork
+
+on:
+  schedule:
+    - cron: "35 0 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/profile-artwork.yml"
+      - "scripts/**"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: profile-artwork
+  cancel-in-progress: true
+
+jobs:
+  artwork:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out the profile
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Refresh public activity and static calendars
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 scripts/update_activity.py --output dist
+
+      - name: Draw contribution animations
+        uses: Platane/snk/svg-only@d8f6715049803e982ee5ff501b6b9b7d5deeb09b # v3
+        with:
+          github_user_name: ${{ github.repository_owner }}
+          outputs: |
+            dist/contribution-snake-light.svg?color_snake=#315ed8&color_dots=#ebeff7,#c3d4fb,#8daaf4,#587cde,#315ed8
+            dist/contribution-snake-dark.svg?palette=github-dark&color_snake=#83aaff&color_dots=#17243b,#243e66,#375f9c,#5b84cc,#83aaff
+
+      - name: Publish generated artwork
+        uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453 # v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: output
+          publish_dir: dist
+          commit_message: "chore: refresh profile activity"

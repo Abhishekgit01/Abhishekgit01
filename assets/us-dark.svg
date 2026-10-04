@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="310" viewBox="0 0 320 310" role="img" aria-labelledby="title desc">
+<title id="title">US — A space for two.</title>
+<desc id="desc">React Native · Expo · Supabase</desc>
+<g font-family="Inter, Segoe UI, Arial, sans-serif">
+<rect x=".5" y=".5" width="319" height="309" rx="16" fill="#0D1422" stroke="#2B3B55"/><text x="23" y="28" font-size="10" fill="#B6C3D8" font-weight="600" letter-spacing="1.7">03 / PRODUCT</text><rect x="67" y="45" width="110" height="83" rx="20" fill="#131E30" stroke="#FDA9C5"/><rect x="143" y="83" width="111" height="72" rx="20" fill="#131E30" stroke="#2B3B55"/><path d="M113 76C104 64 87 75 100 88L115 101L130 88C142 75 126 64 115 77Z" fill="#FDA9C5" opacity=".8"/><path d="M176 113H222M176 128H208" stroke="#FDA9C5" stroke-width="4" stroke-linecap="round" opacity=".6"/><rect x="227" y="51" width="22" height="20" rx="5" fill="#FDA9C5"/><path d="M232 51V46A6 6 0 0 1 244 46V51" fill="none" stroke="#FDA9C5" stroke-width="2"/><circle cx="238" cy="60" r="2" fill="#0D1422"/><path d="M24 175H296" stroke="#2B3B55"/><text x="23" y="216" font-size="33" fill="#F2F5FC" font-weight="700" letter-spacing="-.8">US</text><text x="23" y="244" font-size="15" fill="#B6C3D8" font-weight="400" >A space for two.</text><text x="23" y="283" font-size="11" fill="#FDA9C5" font-weight="500" >React Native · Expo · Supabase</text>
+</g>
+</svg>

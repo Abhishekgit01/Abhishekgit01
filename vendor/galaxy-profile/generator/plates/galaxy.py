@@ -24,6 +24,7 @@ from generator.svg import (
     clean,
     dots,
     dots_d,
+    esc,
     frame,
     num,
     spike_half,
@@ -65,8 +66,8 @@ class Geometry:
     """Where things are: the frame, the core, the spiral."""
 
     def __init__(self, mobile: bool, arms: int) -> None:
-        self.width, self.height = (390, 478) if mobile else (850, 430)
-        self.cx, self.cy, self.radius = (195, 282, 172) if mobile else (630, 215, 196)
+        self.width, self.height = (390, 408) if mobile else (850, 340)
+        self.cx, self.cy, self.radius = (195, 242, 144) if mobile else (640, 170, 156)
         self.arms = max(arms, 1)
         self.b = math.log(self.radius / R0) / (TURNS * 2 * math.pi)
         self.k = math.exp(self.b * PHI)
@@ -516,7 +517,7 @@ ACTOR_SIZES = (
     1.3,
     2.0,
 )  # three sizes, plain: they live four seconds and need no bloom
-FIELD_STARS = 80  # the sparse background sky
+FIELD_STARS = 200  # fine background stars across the banner
 TWINKLING = 8  # of which this many twinkle
 ENTRANCE_STEPS = 16  # more stars than this appear in groups instead of one by one
 PULSING = 8  # active stars, beyond the named ones, whose halo breathes
@@ -548,7 +549,7 @@ def _identity(profile: dict, theme, geo: Geometry, ts: Typesetter) -> tuple:
     size = largest
     while size > smallest and measure(name, size, "light") > room:
         size -= 2
-    y = 58 if mobile else 196
+    y = 58 if mobile else 158
     lines = [
         (
             left,
@@ -605,7 +606,7 @@ def _identity(profile: dict, theme, geo: Geometry, ts: Typesetter) -> tuple:
 
 
 def _sky(geo: Geometry, theme, rng, motion) -> str:
-    """A sparse field of faint stars behind everything; a few of them twinkle."""
+    """Fine stars and a faint dust band behind the identity and galaxy."""
     colour = theme.haze if theme.dark else theme.mute
     steady, twinkling = {}, []
     for index in range(FIELD_STARS if geo.width > 500 else FIELD_STARS * 5 // 8):
@@ -622,7 +623,164 @@ def _sky(geo: Geometry, theme, rng, motion) -> str:
         dots(points, width, colour, opacity, standalone=False)
         for (width, opacity), points in sorted(steady.items())
     )
-    return f"<g {PARTICLE_GROUP}>{steady_dots}</g>" + "".join(twinkling)
+    cloud_x = geo.width * 0.3
+    cloud_y = geo.height * 0.55
+    cloud = (
+        '<defs><radialGradient id="sky-haze">'
+        f'<stop stop-color="{colour}" stop-opacity="{0.07 if theme.dark else 0.035}"/>'
+        f'<stop offset="1" stop-color="{colour}" stop-opacity="0"/>'
+        "</radialGradient></defs>"
+        f'<ellipse cx="{num(cloud_x)}" cy="{num(cloud_y)}" '
+        f'rx="{num(geo.width * 0.52)}" ry="{num(geo.height * 0.33)}" '
+        f'transform="rotate(-14 {num(cloud_x)} {num(cloud_y)})" fill="url(#sky-haze)"/>'
+    )
+    dust_points = []
+    for _ in range(120 if geo.width > 500 else 60):
+        x = rng.uniform(12, geo.width * 0.66)
+        y = cloud_y - 0.25 * (x - cloud_x) + rng.gauss(0, geo.height * 0.09)
+        if 10 < y < geo.height - 10:
+            dust_points.append((x, y))
+    dust_band = dots(dust_points, 0.85, colour, 0.24)
+    return (
+        cloud + f"<g {PARTICLE_GROUP}>{steady_dots}{dust_band}</g>" + "".join(twinkling)
+    )
+
+
+def _nebula_paths(geo: Geometry) -> list:
+    """Different exploratory trails settle into the galaxy's ordered arms."""
+    mobile = geo.width < 500
+    starts = (
+        (
+            ((-38, 117), (7, 104), (33, 143), (72, 117)),
+            ((390, 134), (338, 92), (306, 158), (277, 111)),
+            ((-25, 373), (61, 339), (48, 367), (102, 344)),
+        )
+        if mobile
+        else (
+            ((-45, 229), (45, 179), (28, 59), (228, 66)),
+            ((-55, 41), (92, 26), (223, 115), (367, 83)),
+            ((-44, 311), (120, 273), (213, 325), (368, 279)),
+        )
+    )
+    paths = []
+    for arm, opening in enumerate(starts[: geo.arms]):
+        radius = geo.radius * 0.98
+        outer = geo.point(arm, radius)
+        following = geo.point(arm, radius * 0.97)
+        vx, vy = following[0] - outer[0], following[1] - outer[1]
+        length = math.hypot(vx, vy)
+        reach = 33 if mobile else 67
+        handle = (outer[0] - vx / length * reach, outer[1] - vy / length * reach)
+        if mobile:
+            bridge = ((opening[3][0] + handle[0]) / 2, opening[3][1] + 8)
+        else:
+            bridge = (
+                (opening[3][0] + handle[0]) / 2,
+                opening[3][1] + (25 if arm == 2 else -15),
+            )
+        curves = (opening, (opening[3], bridge, handle, outer))
+        points = []
+        for p0, p1, p2, p3 in curves:
+            for index in range(25):
+                t = index / 25
+                u = 1 - t
+                points.append(
+                    tuple(
+                        u**3 * p0[axis]
+                        + 3 * u * u * t * p1[axis]
+                        + 3 * u * t * t * p2[axis]
+                        + t**3 * p3[axis]
+                        for axis in (0, 1)
+                    )
+                )
+        for index in range(48):
+            radius = geo.radius * (0.98 - 0.62 * index / 47)
+            points.append(geo.point(arm, radius))
+        paths.append(points)
+    return paths
+
+
+def _nebula(geo: Geometry, theme, motion) -> str:
+    """Translucent wisps flow continuously into the existing spiral."""
+    mobile = geo.width < 500
+    paths = [
+        "M" + " L".join(f"{num(x)} {num(y)}" for x, y in points)
+        for points in _nebula_paths(geo)
+    ]
+    wisps = "".join(
+        f'<path d="{path}" fill="none" stroke="url(#nebula-light)" '
+        f'stroke-width="{13 if mobile else 19}" stroke-linecap="round" '
+        f'opacity="{0.32 if theme.dark else 0.16}" filter="url(#nebula-texture)"/>'
+        for path in paths
+    )
+    colour = theme.haze if theme.dark else theme.mute
+    safe_x, safe_y = (177, 62) if mobile else (215, 157)
+    safe_rx, safe_ry = (218, 57) if mobile else (236, 74)
+    return (
+        '<g id="space-nebula" aria-hidden="true"><defs>'
+        '<linearGradient id="nebula-light" gradientUnits="userSpaceOnUse" '
+        f'x1="0" y1="{geo.height * 0.4}" x2="{geo.width}" y2="{geo.height * 0.4}">'
+        f'<stop stop-color="{colour}" stop-opacity=".16"/>'
+        f'<stop offset=".25" stop-color="{colour}" stop-opacity=".76"/>'
+        f'<stop offset=".56" stop-color="{colour}" stop-opacity=".8"/>'
+        f'<stop offset=".84" stop-color="{colour}" stop-opacity=".4"/>'
+        f'<stop offset="1" stop-color="{colour}" stop-opacity="0"/>'
+        "</linearGradient>"
+        '<radialGradient id="nebula-clear">'
+        '<stop stop-color="black"/><stop offset=".48" stop-color="black"/>'
+        '<stop offset="1" stop-color="white"/></radialGradient>'
+        f'<mask id="nebula-safe" maskUnits="userSpaceOnUse" x="0" y="0" width="{geo.width}" height="{geo.height}">'
+        f'<rect width="{geo.width}" height="{geo.height}" fill="white"/>'
+        f'<ellipse cx="{safe_x}" cy="{safe_y}" rx="{safe_rx}" ry="{safe_ry}" fill="url(#nebula-clear)"/>'
+        "</mask>"
+        '<filter id="nebula-texture" x="-30%" y="-50%" width="160%" height="200%">'
+        '<feGaussianBlur in="SourceGraphic" stdDeviation="4" result="envelope"/>'
+        '<feTurbulence type="fractalNoise" baseFrequency=".017 .03" numOctaves="3" seed="17" result="noise"/>'
+        '<feColorMatrix in="noise" type="matrix" '
+        'values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  .85 .85 .85 0 -.6" result="density"/>'
+        '<feComposite in="envelope" in2="density" operator="in" result="cloud"/>'
+        '<feDisplacementMap in="cloud" in2="noise" scale="25" xChannelSelector="R" yChannelSelector="G"/>'
+        '<feGaussianBlur stdDeviation="1.5"/>'
+        "</filter></defs>"
+        f'<g mask="url(#nebula-safe)"><g{motion.cls("nebula-motion")}>'
+        + wisps
+        + "</g></g></g>"
+    )
+
+
+def _stardust(geo: Geometry, theme, seed: str, motion) -> str:
+    """Use the galaxy's palette and bloom along the shared cloud arm."""
+    mobile = geo.width < 500
+    rng = random.Random(f"stardust:{seed}:{mobile}")
+    paths = _nebula_paths(geo)
+    sizes = (
+        ((0.55, 0.25, False), 0.46),
+        ((0.85, 0.4, False), 0.32),
+        ((1.3, 0.6, False), 0.16),
+        ((1.8, 0.85, True), 0.05),
+        ((2.3, 0.9, True), 0.01),
+    )
+    buckets = {}
+    for _ in range(590 if mobile else 1320):
+        spine = rng.choice(paths)
+        index = rng.randrange(len(spine))
+        cx, cy = spine[index]
+        progress = index / (len(spine) - 1)
+        spread = (11 if mobile else 19) * (1 - progress) ** 2 + 2
+        spread *= 1.3 if index < 16 else 1
+        x, y = rng.gauss(cx, spread), rng.gauss(cy, spread * 0.65)
+        if not (8 < x < geo.width - 8 and 8 < y < geo.height - 8):
+            continue
+        width, opacity, bloom = _pick(rng, sizes)
+        opacity = round(opacity * (0.6 + 0.4 * progress), 1)
+        colour = _pick(rng, theme.dust)
+        buckets.setdefault((colour, width, opacity, bloom), []).append((x, y))
+    return (
+        f'<g id="space-stardust" aria-hidden="true" mask="url(#nebula-safe)" {PARTICLE_GROUP}>'
+        + f"<g{motion.cls('nebula-motion')}>"
+        + _field(buckets, theme.glow * 0.8, [4000])
+        + "</g></g>"
+    )
 
 
 def _actors(
@@ -753,6 +911,16 @@ def _compose(
         f".arrive{{animation:arrive 1.2s ease-out {num(T_IN + 0.1, 2)}s both}}"
         "@keyframes arrive{from{opacity:0}}",
     )
+    cloud_start = T_IN * 0.7 + 0.3
+    mo.define(
+        "nebula-motion",
+        f".nebula-motion{{transform-origin:{geo.cx}px {geo.cy}px;"
+        f"animation:nebula-in 2.4s cubic-bezier(.2,.7,.3,1) {num(cloud_start, 2)}s both,"
+        f"nebula-drift 22s ease-in-out {num(cloud_start + 2.4, 2)}s infinite}}"
+        "@keyframes nebula-in{from{opacity:0}to{opacity:1}}"
+        "@keyframes nebula-drift{0%,100%{transform:rotate(0deg) scale(1)}"
+        "50%{transform:rotate(-.6deg) scale(1.012)}}",
+    )
     hot = "#ffffff" if theme.dark else theme.haze
     k = (0.9, 0.42, 0.09) if theme.dark else (0.4, 0.2, 0.06)
     defs = [
@@ -765,7 +933,9 @@ def _compose(
         dust_defs,
     ]
     body = [
+        _nebula(geo, theme, mo),
         sky,
+        _stardust(geo, theme, seed, mo),
         f'<g transform="translate({geo.cx} {geo.cy})" {PARTICLE_GROUP}><circle{mo.cls("ignite")} r="{num(geo.radius * 0.5)}" '
         f'fill="url(#cg)"/><g{mo.cls("arrive")}>{dust_body}</g>{actors}</g>',
     ]
@@ -799,7 +969,10 @@ def _compose(
 
     def at(name: str, inner: str) -> str:
         x, y = positions[name]
-        return f'<g transform="translate({num(x)} {num(y)})">{inner}</g>'
+        return (
+            f'<g data-repo="{esc(name)}" transform="translate({num(x)} {num(y)})">'
+            f"<title>{esc(repos[name].name)}</title>{inner}</g>"
+        )
 
     names_at = len(body)  # the arms' names go in here, under the stars
     if len(order) <= ENTRANCE_STEPS:
@@ -819,7 +992,8 @@ def _compose(
 
     size = label_size(geo)
     identity, identity_boxes = _identity(profile, theme, geo, ts)
-    arm_names = arm_name_paths(model, geo)
+    show_labels = profile.get("show_labels", True)
+    arm_names = arm_name_paths(model, geo) if show_labels else []
     # what a star's name should stay off if it can: every stretch of an arm's name
     half = size * 0.75
     stretches = [
@@ -831,7 +1005,7 @@ def _compose(
     written = {name: r.name for name, r in repos.items()}
     labels = []
     for name, (x, baseline, anchor, box) in place_labels(
-        sorted(model.labels & set(positions)),
+        sorted(model.labels & set(positions)) if show_labels else [],
         positions,
         star_counts,
         geo,

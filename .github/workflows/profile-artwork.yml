@@ -9,12 +9,15 @@ on:
     paths:
       - ".github/workflows/profile-artwork.yml"
       - "scripts/**"
+      - "star-map/**"
       - "vendor/galaxy-profile/**"
       - "galaxy.yml"
       - "requirements-artwork.txt"
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 concurrency:
   group: profile-artwork
@@ -24,16 +27,14 @@ jobs:
   artwork:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Check out the profile
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
-
-      - name: Refresh public activity and static calendars
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python3 scripts/update_activity.py --output dist
 
       - name: Install galaxy renderer dependencies
         run: python3 -m pip install -r requirements-artwork.txt
@@ -41,15 +42,10 @@ jobs:
       - name: Draw the public repository galaxy
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python3 scripts/update_galaxy.py --output dist
+        run: python3 scripts/update_galaxy.py --output dist --snapshot public-repositories.json
 
-      - name: Draw contribution animations
-        uses: Platane/snk/svg-only@d8f6715049803e982ee5ff501b6b9b7d5deeb09b # v3
-        with:
-          github_user_name: ${{ github.repository_owner }}
-          outputs: |
-            dist/contribution-snake-light.svg?color_snake=#111111&color_dots=#eeeeee,#cccccc,#999999,#666666,#333333
-            dist/contribution-snake-dark.svg?color_snake=#ffffff&color_dots=#161616,#333333,#666666,#aaaaaa,#dddddd
+      - name: Build the interactive star map
+        run: python3 scripts/build_star_map.py --input public-repositories.json --svg-dir dist --output dist/index.html
 
       - name: Publish generated artwork
         uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453 # v4
@@ -57,4 +53,16 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: output
           publish_dir: dist
-          commit_message: "chore: refresh profile activity"
+          commit_message: "chore: refresh profile galaxy"
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
+
+      - name: Upload the star map
+        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
+        with:
+          path: dist
+
+      - name: Deploy the star map
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4

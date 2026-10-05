@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Abhishek R P · Interactive star map</title>
+    <link rel="stylesheet" href="star-map-assets/star-map.css" />
+    <script src="star-map-assets/star-map.js" defer></script>
+  </head>
+  <body>
+    <main>
+      <div
+        class="star-map"
+        aria-label="Abhishek's interactive repository galaxy"
+      >
+        <picture>
+          <source
+            media="(max-width: 600px) and (prefers-color-scheme: light) and (prefers-reduced-motion: reduce)"
+            srcset="star-map-assets/galaxy-light-mobile-static.svg"
+          />
+          <source
+            media="(max-width: 600px) and (prefers-color-scheme: light)"
+            srcset="star-map-assets/galaxy-light-mobile.svg"
+          />
+          <source
+            media="(max-width: 600px) and (prefers-reduced-motion: reduce)"
+            srcset="star-map-assets/galaxy-dark-mobile-static.svg"
+          />
+          <source
+            media="(max-width: 600px)"
+            srcset="star-map-assets/galaxy-dark-mobile.svg"
+          />
+          <source
+            media="(prefers-color-scheme: light) and (prefers-reduced-motion: reduce)"
+            srcset="star-map-assets/galaxy-light-static.svg"
+          />
+          <source
+            media="(prefers-color-scheme: light)"
+            srcset="star-map-assets/galaxy-light.svg"
+          />
+          <source
+            media="(prefers-reduced-motion: reduce)"
+            srcset="star-map-assets/galaxy-dark-static.svg"
+          />
+          <img
+            src="star-map-assets/galaxy-dark.svg"
+            alt="Abhishek R P. Learning by making things work. Thin star trails gather into a spiral."
+            width="850"
+            height="340"
+          />
+        </picture>
+        {{PROJECT_BUTTONS}}
+        <section
+          class="project-details"
+          id="project-details"
+          aria-label="Repository details"
+          hidden
+        >
+          <button class="close-details" aria-label="Close repository details">
+            ×
+          </button>
+          <span class="eyebrow">Public repository</span>
+          <h2 id="project-name"></h2>
+          <p id="project-description"></p>
+          <a id="project-link" target="_blank" rel="noopener noreferrer"
+            >Open repository <span aria-hidden="true">↗</span></a
+          >
+        </section>
+      </div>
+      <p class="map-hint">
+        Hover, focus, or tap one of the three ringed stars.
+      </p>
+      <footer>
+        Galaxy artwork adapted from
+        <a href="https://github.com/vinimlo/galaxy-profile">galaxy-profile</a> ·
+        <a
+          href="https://github.com/Abhishekgit01/Abhishekgit01/blob/main/ARTWORK.md"
+          >Source and licenses</a
+        >
+      </footer>
+    </main>
+    <script type="application/json" id="project-data">
+      {{PROJECT_DATA}}
+    </script>
+  </body>
+</html>

@@ -74,6 +74,8 @@ def validate_config(config: dict) -> dict:
         raise ConfigError("'profile' must be a mapping.")
     if not profile.get("name"):
         raise ConfigError("'profile.name' is required.")
+    if not isinstance(profile.get("show_labels", True), bool):
+        raise ConfigError("'profile.show_labels' must be true or false.")
 
     # galaxy_arms — required, must be a list
     galaxy_arms = config.get("galaxy_arms", [])

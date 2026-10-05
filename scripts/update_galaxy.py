@@ -93,6 +93,9 @@ def main():
     parser.add_argument("--input", type=Path, help="Use a public repository snapshot")
     parser.add_argument("--output", type=Path, default=ROOT / "dist")
     parser.add_argument(
+        "--snapshot", type=Path, help="Save the public repository input"
+    )
+    parser.add_argument(
         "--date", type=date.fromisoformat, help="Reproduce a dated render"
     )
     args = parser.parse_args()
@@ -104,6 +107,8 @@ def main():
     today = args.date or datetime.now(timezone.utc).date()
     variants = render_variants(repositories, config, today)
     args.output.mkdir(parents=True, exist_ok=True)
+    if args.snapshot:
+        args.snapshot.write_text(json.dumps(repositories), encoding="utf-8")
     for name, artwork in variants.items():
         destination = args.output / name
         temporary = destination.with_suffix(".tmp")
